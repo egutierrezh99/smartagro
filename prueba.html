@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+ <!-- jQuery -->
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <!-- FusionCharts -->
+    <script type="text/javascript" src="https://cdn.fusioncharts.com/fusioncharts/latest/fusioncharts.js"></script>
+    <!-- jQuery-FusionCharts -->
+    <script type="text/javascript" src="https://rawgit.com/fusioncharts/fusioncharts-jquery-plugin/develop/dist/fusioncharts.jqueryplugin.min.js"></script>
+    <!-- Fusion Theme -->
+    <script type="text/javascript" src="https://cdn.fusioncharts.com/fusioncharts/latest/themes/fusioncharts.theme.fusion.js"></script>
+    <meta charset="UTF-8">
+    <title>SMARTAGRO</title>
+    <link rel="stylesheet" href="estilo.css">
+    <style>
+        body{ font: 14px sans-serif; text-align: center; }
+    </style>
+</head>
+<body>
+    <h1>SMARTAGRO</h1>
+    <p>
+        <a href="login.php" class="btn btn-warning">Iniciar Sesión</a>
+        <a href="informacion.php" class="btn btn-danger ml-3">Información</a>
+    </p>
+<body>
+        <script type="text/javascript">
+            //STEP 2 - Chart Data
+            const chartData = [{
+                label: "Venezuela",
+                value: "290"
+            }, {
+                label: "Saudi",
+                value: "260"
+            }, {
+                label: "Canada",
+                value: "180"
+            }, {
+                label: "Iran",
+                value: "140"
+            }, {
+                label: "Russia",
+                value: "115"
+            }, {
+                label: "UAE",
+                value: "100"
+            }, {
+                label: "US",
+                value: "30"
+            }, {
+                label: "China",
+                value: "30"
+            }]
+            //STEP 3 - Chart Configurations
+            const chartConfigs = {
+                type: "column2d",
+                width: "700",
+                height: "400",
+                dataFormat: "json",
+                dataSource: {
+                    // Chart Configuration
+                    "chart": {
+                        "caption": "Countries With Most Oil Reserves [2017-18]",
+                        "subCaption": "In MMbbl = One Million barrels",
+                        "xAxisName": "Country",
+                        "yAxisName": "Reserves (MMbbl)",
+                        "numberSuffix": "K",
+                        "theme": "fusion",
+                    },
+                    // Chart Data
+                    "data": chartData
+                }
+            }
+            // Create a chart container
+            $('document').ready(function () {
+                $("#chart-container").insertFusionCharts(chartConfigs);
+            });
+        </script>
+        <div id="chart-container">FusionCharts will render here</div>
+</body>
+
+</html>
