@@ -21,7 +21,7 @@ and contra='". $password ."'";
 	$rows = mysqli_num_rows($result);
         if($rows==1){
 	    $_SESSION['username'] = $username;
-            // Redirect user to index.php
+            // Redirect user to graficos.php
 	    header("Location: graficos.php");
 	    exit();
          }else{

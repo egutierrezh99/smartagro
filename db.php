@@ -1,9 +1,7 @@
 <?php
 $servername = "localhost";
-$username = "root";
+$dbuser = "root";
 $password = "";
 $dbName = "smartagro";
-
-$conn = new mysqli($servername, $username, $password, $dbName);
-
+$conn = new mysqli($servername, $dbuser, $password, $dbName);
 ?>
