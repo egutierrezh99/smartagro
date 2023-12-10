@@ -14,77 +14,203 @@
 </head>
 <?php
 session_start();
+
 if (isset($_SESSION['username'])) {
     $username = $_SESSION['username'];
-
-    /*$servername = "smartagro.clgsxgukbz7x.us-east-1.rds.amazonaws.com";
-    $username = "admin";
-    $password = "Monitor?2";
-    $dbName = "smartagro";
-    $dbPort = "3306";
-    $conn = new mysqli($servername, $username, $password, $dbName, $dbPort);
-
-    if ($conn->connect_error) {
-        die("Connection failed: " . $conn->connect_error);
-    }*/
     require('db.php');
+    
     echo $_SESSION['username'];
-    $estaciones = "SELECT fk_estacion FROM estacion_usuario WHERE fk_usuario = '" . $username . "'";
-    $result1 = $conn->query($estaciones);
-
+    
+    // Form for selecting stations
     echo "<form method='post'>";
     echo "<label for='estacion'>Selecciona una estación:</label>";
-    echo "<button type='button' onclick='toggleDropdown()'>Mostrar/ocultar estaciones</button>";
-    echo "<select id='estacion' name='estacion[]' multiple style='display: none;'>"; // Inicialmente oculto
+    echo "<select id='estacion' name='estacion'>";
+    $estaciones = "SELECT fk_estacion FROM estacion_usuario WHERE fk_usuario = '" . $username . "'";
+    $result1 = $conn->query($estaciones);
     while ($row = $result1->fetch_assoc()) {
         echo "<option value='" . $row['fk_estacion'] . "'>" . $row['fk_estacion'] . "</option>";
     }
     echo "</select>";
     echo "<input type='submit' value='Submit' name='submit'>";
     echo "</form>";
-
-    // Cierre de sesión
-    /*echo "<form method='post'>";
-    echo "<input type='submit' name='logout' value='Cerrar Sesión'>";
-    echo "</form>";*/
-
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        if (isset($_POST['submit'])) {
-            $estacion = $_POST['estacion'];
-            $query = "SELECT AVG(valor) as humedad_suelo, DATE(hora) as dia 
+    
+    // Form for selecting sensors (outside of the first form)
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
+        $estacion = $_POST['estacion'];
+        $_SESSION['estacion'] = $estacion;
+        echo $estacion;
+      
+        echo "<form method='post'>";
+        echo "<label for='sensor'>Selecciona el sensor que quiere monitorear:</label>";
+        echo "<select id='sensor' name='sensor'>";
+        $sensores = "SELECT tipo FROM sensores WHERE fk_estacion ='" . $estacion . "'";
+        $result2 = $conn->query($sensores);
+        while ($row = $result2->fetch_assoc()) {
+            echo "<option value='" . $row['tipo'] . "'>" . $row['tipo'] . "</option>";
+        }
+        echo "</select>";
+        /*echo "<input type='submit' value='Submit' name='submit2'>";*/
+        echo "<label for='modo'>Selecciona la franja que se quiere monitorear:</label>";
+        echo "<select id='modo' name='modo'>";
+        echo "<option value='detallado'>Detallado</option>";
+        echo "<option value='diario'>Diario</option>";
+        echo "<option value='mensual'>Mensual</option>";
+        echo "<option value='anual'>Anual</option>";
+        echo "</select>";
+        echo "<input type='submit' value='Submit' name='submit3'>";
+        echo "</form>";
+    }
+    
+    // Process the second form
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit3'])) {
+        echo "Form 2 submitted!";
+        $estacion= $_SESSION['estacion'];
+        $sensor= $_POST['sensor'];
+        $_SESSION['sensor']=$sensor;
+        $modo=$_POST['modo'];
+        echo $modo;
+            if($sensor=='suelo' && $modo=='diario'){
+                $mfecha="dia";
+                $titulo="Media de Humedad en el suelo por día";
+                $variable='humedad_suelo';
+                $unidad="%";
+                $query = "SELECT AVG(hsuelo.valor) as humedad_suelo, DATE(hsuelo.hora) as dia
                       FROM hsuelo , sensores
-                      WHERE hsuelo.fk_id_sensor=sensores.id_sensor 
-                      AND sensores.fk_estacion IN ('" . implode("','", $estacion) . "')
-                      GROUP BY dia";
-
-            $result = $conn->query($query);
-            $jsonArray = array();
-
-            // Check if there is any data returned by the SQL Query
-            if ($result->num_rows > 0) {
-                while ($row = $result->fetch_assoc()) {
-                    $data = array(
-                        "label" => $row["dia"],
-                        "value" => $row["humedad_suelo"]
-                    );
-                    array_push($jsonArray, $data);
-                }
+                      WHERE hsuelo.fk_id_sensor=sensores.id_sensor
+                      AND sensores.fk_estacion='" . $estacion . "'
+                      GROUP BY DATE(hsuelo.hora)";
+            }elseif($sensor=='temperatura' && $modo=='diario'){
+                $mfecha="dia";
+                $titulo="Media de Temperatura por día";
+                $variable='temperatura';
+                $unidad="ºC";
+                $query = "SELECT AVG(temperatura.valor) as temperatura, DATE(temperatura.hora) as dia
+                      FROM temperatura , sensores
+                      WHERE temperatura.fk_id_sensor=sensores.id_sensor
+                      AND sensores.fk_estacion='" . $estacion . "'
+                      GROUP BY DATE(temperatura.hora)";
+            }elseif($sensor=='humedad' && $modo=='diario'){
+                $mfecha="dia";
+                $titulo="Media de Humedad por día";
+                $unidad="%";
+                $variable='humedad';
+                $query = "SELECT AVG(humedad.valor) as humedad, DATE(humedad.hora) as dia
+                      FROM humedad , sensores
+                      WHERE humedad.fk_id_sensor=sensores.id_sensor
+                      AND sensores.fk_estacion='" . $estacion . "'
+                      GROUP BY DATE(humedad.hora)";
+            }elseif($sensor=='suelo' && $modo=='mensual'){
+                $mfecha="mes";
+                $titulo="Media de Humedad en el suelo por mes";
+                $variable='humedad_suelo';
+                $unidad="%";
+                $query = "SELECT AVG(hsuelo.valor) as humedad_suelo, CONCAT(YEAR(hsuelo.hora), ' ', MONTHNAME(hsuelo.hora)) as mes
+                      FROM hsuelo , sensores
+                      WHERE hsuelo.fk_id_sensor=sensores.id_sensor
+                      AND sensores.fk_estacion='" . $estacion . "'
+                      GROUP BY CONCAT(YEAR(hsuelo.hora), ' ', MONTHNAME(hsuelo.hora))";
+            }elseif($sensor=='temperatura' && $modo=='mensual'){
+                $mfecha="mes";
+                $titulo="Media de Temperatura por mes";
+                $variable='temperatura';
+                $unidad="ºC";
+                $query = "SELECT AVG(temperatura.valor) as temperatura, CONCAT(YEAR(temperatura.hora), ' ', MONTHNAME(temperatura.hora)) as mes
+                      FROM temperatura , sensores
+                      WHERE temperatura.fk_id_sensor=sensores.id_sensor
+                      AND sensores.fk_estacion='" . $estacion . "'
+                      GROUP BY CONCAT(YEAR(temperatura.hora), ' ', MONTHNAME(temperatura.hora))";
+            }elseif($sensor=='humedad' && $modo=='mensual'){
+                $mfecha="mes";
+                $titulo="Media de Humedad por mes";
+                $unidad="%";
+                $variable='humedad';
+                $query = "SELECT AVG(humedad.valor) as humedad, CONCAT(YEAR(humedad.hora), ' ', MONTHNAME(humedad.hora)) as mes
+                      FROM humedad , sensores
+                      WHERE humedad.fk_id_sensor=sensores.id_sensor
+                      AND sensores.fk_estacion='" . $estacion . "'
+                      GROUP BY CONCAT(YEAR(humedad.hora), ' ', MONTHNAME(humedad.hora))";
+            }elseif($sensor=='suelo' && $modo=='anual'){
+                $mfecha="anio";
+                $titulo="Media de Humedad en el suelo por año";
+                $variable='humedad_suelo';
+                $unidad="%";
+                $query = "SELECT AVG(hsuelo.valor) as humedad_suelo, YEAR(hsuelo.hora) as anio
+                      FROM hsuelo , sensores
+                      WHERE hsuelo.fk_id_sensor=sensores.id_sensor
+                      AND sensores.fk_estacion='" . $estacion . "'
+                      GROUP BY YEAR(hsuelo.hora)";
+            }elseif($sensor=='temperatura' && $modo=='anual'){
+                $mfecha="anio";
+                $titulo="Media de Temperatura por año";
+                $variable='temperatura';
+                $unidad="ºC";
+                $query = "SELECT AVG(temperatura.valor) as temperatura, YEAR(temperatura.hora) as anio
+                      FROM temperatura , sensores
+                      WHERE temperatura.fk_id_sensor=sensores.id_sensor
+                      AND sensores.fk_estacion='" . $estacion . "'
+                      GROUP BY YEAR(temperatura.hora)";
+            }elseif($sensor=='humedad' && $modo=='anual'){
+                $mfecha="anio";
+                $titulo="Media de Humedad por año";
+                $unidad="%";
+                $variable='humedad';
+                $query = "SELECT AVG(humedad.valor) as humedad, YEAR(humedad.hora) as anio
+                      FROM humedad , sensores
+                      WHERE humedad.fk_id_sensor=sensores.id_sensor
+                      AND sensores.fk_estacion='" . $estacion . "'
+                      GROUP BY YEAR(humedad.hora)";
+            }elseif($sensor=='suelo' && $modo=='detallado'){
+                $mfecha="hora";
+                $titulo="Media de Humedad en el suelo por hora";
+                $variable='humedad_suelo';
+                $unidad="%";
+                $query = "SELECT AVG(hsuelo.valor) as humedad_suelo, DATE_FORMAT(hsuelo.hora, '%Y-%m-%d %H:00:00') as hora
+                      FROM hsuelo , sensores
+                      WHERE hsuelo.fk_id_sensor=sensores.id_sensor
+                      AND sensores.fk_estacion='" . $estacion . "'
+                      GROUP BY DATE_FORMAT(hsuelo.hora, '%Y-%m-%d %H:00:00')";
+            }elseif($sensor=='temperatura' && $modo=='detallado'){
+                $mfecha="hora";
+                $titulo="Media de Temperatura por hora";
+                $variable='temperatura';
+                $unidad="ºC";
+                $query = "SELECT AVG(temperatura.valor) as temperatura, DATE_FORMAT(temperatura.hora, '%Y-%m-%d %H:00:00') as hora
+                      FROM temperatura , sensores
+                      WHERE temperatura.fk_id_sensor=sensores.id_sensor
+                      AND sensores.fk_estacion='" . $estacion . "'
+                      GROUP BY DATE_FORMAT(temperatura.hora, '%Y-%m-%d %H:00:00')";
+            }elseif($sensor=='humedad' && $modo=='detallado'){
+                $mfecha="hora";
+                $titulo="Media de Humedad por hora";
+                $unidad="%";
+                $variable='humedad';
+                $query = "SELECT AVG(humedad.valor) as humedad, DATE_FORMAT(humedad.hora, '%Y-%m-%d %H:00:00') as hora
+                      FROM humedad , sensores
+                      WHERE humedad.fk_id_sensor=sensores.id_sensor
+                      AND sensores.fk_estacion='" . $estacion . "'
+                      GROUP BY DATE_FORMAT(humedad.hora, '%Y-%m-%d %H:00:00')";
+            }
+           
+        $result = $conn->query($query);
+        $jsonArray = array();
+        
+        // Check if there is any data returned by the SQL Query
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $data = array(
+                    "label" => $row[$mfecha],
+                    "value" => $row[$variable]
+                );
+                array_push($jsonArray, $data);
             }
         }
-
-        // Cerrar sesión
-        /*if (isset($_POST['logout'])) {
-            // Cerrar sesión y redirigir a index.php
-            header("Location: index.php");
-            session_destroy();
-            
-            exit();
-        }*/
+        }
     }
-
-    // Cerrar la conexión a la base de datos
+    
+    // Close the connection to the database
     $conn->close();
-}
+
+
 ?>
 <script>
     function toggleDropdown() {
@@ -99,7 +225,6 @@ if (isset($_SESSION['username'])) {
 <script type="text/javascript">
     // Utiliza el array PHP $jsonArray para configurar los datos del gráfico
     const data = <?php echo json_encode($jsonArray); ?>;
-
     const chartConfigs = {
         type: "column2d",
         width: "700",
@@ -108,11 +233,11 @@ if (isset($_SESSION['username'])) {
         dataSource: {
             // Configuración del gráfico
             "chart": {
-                "caption": "Humedad del suelo por estación",
+                "caption": "<?php echo htmlspecialchars($titulo); ?>",
                 "subCaption": "Promedio diario",
                 "xAxisName": "Día",
-                "yAxisName": "Humedad del suelo",
-                "numberSuffix": "%",
+                "yAxisName": "<?php echo htmlspecialchars($variable); ?>",
+                "numberSuffix": "<?php echo htmlspecialchars($unidad); ?>",
                 "theme": "fusion",
             },
             // Datos del gráfico
