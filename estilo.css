@@ -1,16 +1,79 @@
-body{
-    background-color: seagreen;
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+    background: url('fondo.jpg') center/cover fixed no-repeat; /* Imagen de fondo para todo el cuerpo */
 }
 
-h1{
-    border-style: groove;
-    margin-left: 200px;
-    margin-right: 200px;
-    margin-top: 60px;
+.container {
+    width: 80%;
+    margin: auto;
+    padding: 20px;
+    box-sizing: border-box;
+    text-align: center;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: rgba(255, 255, 255, 0.95); /* Fondo gris semi-transparente para el contenedor */
 }
-a{
-    background-color: grey;
-    margin: 10px;
-    width: 100px;
-    border-style:  double;
+
+h1 {
+    margin-top: 0;
+    color: #333;
+}
+
+.btn-container {
+    margin-top: 20px;
+}
+
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+    margin-right: 10px;
+}
+
+.btn-warning {
+    background-color:  #e0e0e0;
+}
+
+.btn-danger {
+    background-color:  #e0e0e0;
+}
+
+.main-content {
+    margin-top: 80px;
+    text-align: left;
+    padding: 15px; 
+    border-radius: 5px; /* Bordes redondeados */
+    background-color: #e0e0e0;
+}
+
+.contact-container {
+    background-color: #e0e0e0; /* Fondo gris sólido para el contenedor de datos de contacto */
+    padding: 10px;
+    border-radius: 5px;
+    margin-top: auto;
+    align-self: center;
+}
+
+.login-container{
+	background-color: #e0e0e0;
+    padding: 10px;
+    border-radius: 5px;
+    margin-top: 130px;
+    align-self: center;
+	
+}
+
+.graficos-container{
+	background-color: #e0e0e0;
+    padding: 10px;
+    border-radius: 5px;
+    margin-top: 130px;
+    align-self: center;
 }

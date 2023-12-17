@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+	<link rel="stylesheet" href="estilo.css" />
  <!-- jQuery -->
     <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <!-- FusionCharts -->
@@ -12,6 +13,8 @@
     <meta charset="UTF-8">
     <title>SMARTAGRO</title>
 </head>
+<body>
+<div class="graficos-container">
 <?php
 session_start();
 
@@ -19,9 +22,7 @@ if (isset($_SESSION['username'])) {
     $username = $_SESSION['username'];
     require('db.php');
     
-    echo $_SESSION['username'];
-    
-    // Form for selecting stations
+    // Formulario para elegir la estacion
     echo "<form method='post'>";
     echo "<label for='estacion'>Selecciona una estación:</label>";
     echo "<select id='estacion' name='estacion'>";
@@ -34,11 +35,10 @@ if (isset($_SESSION['username'])) {
     echo "<input type='submit' value='Submit' name='submit'>";
     echo "</form>";
     
-    // Form for selecting sensors (outside of the first form)
+    // Formulario para elegir el sensor
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
         $estacion = $_POST['estacion'];
         $_SESSION['estacion'] = $estacion;
-        echo $estacion;
       
         echo "<form method='post'>";
         echo "<label for='sensor'>Selecciona el sensor que quiere monitorear:</label>";
@@ -49,7 +49,6 @@ if (isset($_SESSION['username'])) {
             echo "<option value='" . $row['tipo'] . "'>" . $row['tipo'] . "</option>";
         }
         echo "</select>";
-        /*echo "<input type='submit' value='Submit' name='submit2'>";*/
         echo "<label for='modo'>Selecciona la franja que se quiere monitorear:</label>";
         echo "<select id='modo' name='modo'>";
         echo "<option value='detallado'>Detallado</option>";
@@ -61,14 +60,13 @@ if (isset($_SESSION['username'])) {
         echo "</form>";
     }
     
-    // Process the second form
+    // Procesamos el segundo formulario
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit3'])) {
-        echo "Form 2 submitted!";
         $estacion= $_SESSION['estacion'];
         $sensor= $_POST['sensor'];
         $_SESSION['sensor']=$sensor;
         $modo=$_POST['modo'];
-        echo $modo;
+        //dependiendo de lo que el usuario ha elegido definimos las querys que procesaremos para mostrar en los gráficos
             if($sensor=='suelo' && $modo=='diario'){
                 $mfecha="dia";
                 $titulo="Media de Humedad en el suelo por día";
@@ -194,7 +192,7 @@ if (isset($_SESSION['username'])) {
         $result = $conn->query($query);
         $jsonArray = array();
         
-        // Check if there is any data returned by the SQL Query
+        // comprobamos si la query devuelve al menos 1 fila
         if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
                 $data = array(
@@ -206,8 +204,6 @@ if (isset($_SESSION['username'])) {
         }
         }
     }
-    
-    // Close the connection to the database
     $conn->close();
 
 
@@ -251,5 +247,6 @@ if (isset($_SESSION['username'])) {
     });
 </script>
 <div id="chart-container">FusionCharts will render here</div>
+</div>
 </body>
 </html>

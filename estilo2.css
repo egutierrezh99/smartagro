@@ -1,0 +1,47 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+    background: url('tu-imagen-de-fondo.jpg') center/cover fixed no-repeat; /* Imagen de fondo para todo el cuerpo */
+}
+
+.form {
+    width: 300px;
+    margin: auto;
+    margin-top: 100px; /* Ajusta según sea necesario para centrar verticalmente */
+    padding: 20px;
+    box-sizing: border-box;
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.8); /* Fondo gris semi-transparente para el formulario */
+    border-radius: 5px; /* Bordes redondeados */
+}
+
+h1 {
+    margin-top: 0;
+    color: #333;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+input {
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+input[type="submit"] {
+    background-color: #FFA500;
+    color: #fff;
+    cursor: pointer;
+}
+
+input[type="submit"]:hover {
+    background-color: #FF8C00;
+}
